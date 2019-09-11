@@ -33,9 +33,9 @@ public class Lab2
 		}
 		
 	}
-	public static long elapse(long started) 
+	public static float elapse(long started) 
 	{
-		long current = (System.currentTimeMillis()-started)/1000;
+		float current = (System.currentTimeMillis()-started)/1000f;
 		return current;
 	}
 	
