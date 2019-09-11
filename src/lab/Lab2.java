@@ -65,13 +65,13 @@ public class Lab2
 			{
 				right++;
 				System.out.println("Correct! Score: "+right+" Time Elapsed: "+elapse(started)+" out of "+timeLimit/1000 +" seconds");
-				
+				summary[c1]++;
 			}
 			else 
 			{
 				
 				System.out.println("Wrong! Score: "+right+" Time Elapsed: "+elapse(started)+" out of "+timeLimit/1000+" seconds");
-				summary[c1]++;
+				summary[c1]--;
 			}
 		
 			
@@ -82,12 +82,25 @@ public class Lab2
 		// End of game user summary
 		System.out.println("----------------------------------------");
 		System.out.println("You final score was "+right);
-		System.out.println("You got these wrong:");
+		System.out.println("----------------------------------------");
+		System.out.println("You got these Correct:");
+		System.out.println("----------------------------------------");
 		for (int i=0; i<summary.length;i++)
 		{
-			if(summary[i] != 0) 
+			if(summary[i] > 0) 
 			{
-				System.out.println(FULL_NAMES[i]+" wrong "+summary[i]+" time(s)");
+				System.out.println(FULL_NAMES[i]+" correct "+summary[i]+" time(s)");
+			}
+			
+		}
+		System.out.println("----------------------------------------");
+		System.out.println("You got these wrong:");
+		System.out.println("----------------------------------------");
+		for (int i=0; i<summary.length;i++)
+		{
+			if(summary[i] < 0) 
+			{
+				System.out.println(FULL_NAMES[i]+" wrong "+summary[i]*-1+" time(s)");
 			}
 			
 		}
