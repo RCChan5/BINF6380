@@ -34,13 +34,13 @@ public class Lab3
 				}
 				else
 				{
-					seqStringBuf.append(nextLine+"   ");
+					seqStringBuf.append(nextLine);
 				}
 			}	
 				
 				//convert stringbuffer to string
 				String seqArray[] = (seqStringBuf.toString()).split("   ");
-				String nameArray[] = (nameStringBuf.toString()).split("   ");
+				String nameArray[] = (nameStringBuf.toString()).split();
 				//ArrayList<String []> result = new ArrayList<String[]>();
 				//result.add(innerArray);
 				
@@ -49,10 +49,10 @@ public class Lab3
 				for(int i = 0; i < nameArray.length; i++) 
 				{
 					System.out.println(nameArray[i]);
-					System.out.println(seqArray[i].trim());
+					System.out.println(seqArray[i]);
 					
 				}
-			
+				//getUniqueElements(seqArray);
 				System.out.println("end");
 				
 				reader.close();
@@ -60,7 +60,36 @@ public class Lab3
 				
 	
 	}
+	
+	/*returns an array of unique elements from the array 
+	 * 
+	 */
 	public static String[] getUniqueElements(String[] input) {
+		
+		//String[] uniqueElements = new String[];
+		StringBuffer uniqueElements = new StringBuffer();
+		
+		//iterate throuh array
+		for(int i=0;i<input.length;i++) {
+			//iterate through char in each element
+			
+			
+			
+		}
+		
+//		for(int i=0;i<input.length;i++){
+//            boolean isDistinct = false;
+//            for(int j=0;j<i;j++){
+//                if(input[i] == input[j]){
+//                    isDistinct = true;
+//                    break;
+//                }
+//            }
+//            if(!isDistinct){
+//            	uniqueElements.append(input[i])
+//                System.out.print(input[i]+" ");
+//            }
+//        }
 		return null;
 	}
 	
@@ -69,10 +98,7 @@ public class Lab3
 		String location1 = "/home/rosh/Desktop/example.fasta";
 		String[] holder = fastaReader(location1);
 		
-//		for(String a: holder) {
-//			System.out.println("hello");
-//			System.out.println(a);
-//		}
+
 		
 		
 		
