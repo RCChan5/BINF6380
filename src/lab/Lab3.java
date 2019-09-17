@@ -5,7 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-//import java.util.ArrayList;
+import java.util.ArrayList;
 //import java.util.Scanner;
 
 //import java.io.File;
@@ -22,25 +22,41 @@ public class Lab3
 	public static String[] fastaReader(String location) throws Exception 
 	{
 			BufferedReader reader = new BufferedReader(new FileReader(new File(location)));
-			StringBuffer inner = new StringBuffer();
+			StringBuffer nameStringBuf = new StringBuffer();
+			StringBuffer seqStringBuf = new StringBuffer();
+			// for loop to parse out name and seq into a stringbuffer
 			for(String nextLine =reader.readLine(); nextLine != null;nextLine=reader.readLine()) 
 			{	
 				
 				if (nextLine.startsWith(">")) 
 				{	
-					inner.append(nextLine+"   ");	
+					nameStringBuf.append(nextLine+"   ");	
 				}
 				else
 				{
-					inner.append(nextLine);
+					seqStringBuf.append(nextLine+"   ");
 				}
 			}	
 				
-				String holder =(inner.toString());
-				System.out.println(holder);
-				String x1[] = holder.split(">");
+				//convert stringbuffer to string
+				String seqArray[] = (seqStringBuf.toString()).split("   ");
+				String nameArray[] = (nameStringBuf.toString()).split("   ");
+				//ArrayList<String []> result = new ArrayList<String[]>();
+				//result.add(innerArray);
+				
+				///////////////////////building each inner array//////////////////////
+				//for loop iterates through string buffer array and splits it into 
+				for(int i = 0; i < nameArray.length; i++) 
+				{
+					System.out.println(nameArray[i]);
+					System.out.println(seqArray[i].trim());
+					
+				}
+			
+				System.out.println("end");
+				
 				reader.close();
-				return x1;
+				return nameArray;
 				
 	
 	}
@@ -53,10 +69,10 @@ public class Lab3
 		String location1 = "/home/rosh/Desktop/example.fasta";
 		String[] holder = fastaReader(location1);
 		
-		for(String a: holder) {
-			System.out.println("hello");
-			System.out.println(a);
-		}
+//		for(String a: holder) {
+//			System.out.println("hello");
+//			System.out.println(a);
+//		}
 		
 		
 		
