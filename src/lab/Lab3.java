@@ -15,10 +15,16 @@ import java.util.Map;
 public class Lab3
 {
 
-	public static void fileWriter(String location) throws Exception
+	public static void fileWriter(ArrayList<String[]> results, String location) throws Exception
 	{
 			BufferedWriter writer = new BufferedWriter(new FileWriter(new File(location)));
 			
+			
+			writer.write("ID	numA	numT	numC	numG	sequence\n");
+			for(String[] a: results) {
+				writer.write(a[0]+"	"+a[1]+"	"+a[2]+"	"+a[3]+"	"+a[4]+"	"+a[5]+"\n");
+			}
+						
 			writer.flush();
 			writer.close();
 	}
@@ -74,7 +80,7 @@ public class Lab3
 	        	Integer cCounter = sequenceLength-counter.replaceAll("C", "").length();
 	        	Integer gCounter = sequenceLength-counter.replaceAll("G", "").length();
 	        	
-	        	
+	        	//filling inner array
 	        	inner[0]=entry.getKey().toString();
 	        	inner[1]= aCounter.toString();
 	        	inner[2]= tCounter.toString();
@@ -85,9 +91,6 @@ public class Lab3
 	            results.add(inner);
 	            
 	        }
-				
-				
-				
 				reader.close();
 				return results;
 				
@@ -139,30 +142,11 @@ public class Lab3
 	
 	public static void main(String[] args) throws Exception
 	{
-		String location1 = "/home/rosh/Desktop/example.fasta";
-		ArrayList<String[]> holder = fastaReader(location1);
+		String fasta = "/home/rosh/Desktop/example.fasta";
+		String output = "/home/rosh/Desktop/output.fasta";
 		
-
-		
-		
-		
+		fileWriter(fastaReader(fasta),output);
 		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 }
