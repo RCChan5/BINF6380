@@ -1,4 +1,4 @@
-package lab.Lab4;
+package lab;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
