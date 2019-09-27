@@ -8,8 +8,6 @@ import java.io.FileWriter;
 import java.util.*;
 
 
-
-
 /*
  * Make a static factory method that parses a Fasta file and returns a list of FastaSequence objects
  */
@@ -46,7 +44,7 @@ public class FastaSequence
 			}
 			else
 			{
-				//if else is for multi line fasta files so null value is not appended into value
+				//if else is for multiline fasta files so null value is not appended into value
 				if(hash_map.get(key)==null) {
 					hash_map.put(key,nextLine);
 				}
@@ -84,7 +82,6 @@ public class FastaSequence
 		//iterate through lsit object and append to has map value
 		for( FastaSequence fs : fastaList) 
 		{
-			System.out.println(fs.getSequence());
 			if(hash_map.get(fs.getSequence())!= null) {
 				hash_map.put(fs.getSequence(),hash_map.get(fs.getSequence())+1);
 			}
@@ -93,10 +90,23 @@ public class FastaSequence
 			}
 		}
 		
-		System.out.println(hash_map);
-		
-		//return output as file
-			
+		List<fastaOrder> orderArray = new ArrayList<fastaOrder>();
+		//populate objects and file em into an array
+		for(Map.Entry<String,Integer> entry : hash_map.entrySet()) 
+		{
+			//orderArray[counter] = new fastaOrder(entry.getValue(), entry.getKey() );
+			//fastaOrder objHolder =  new fastaOrder((Integer)entry.getValue(), entry.getKey().toString());
+			int count = entry.getValue();
+			String seq = entry.getKey();
+			fastaOrder objHolder = new fastaOrder(count,seq);
+			orderArray.add(objHolder);
+		}
+			//return output as file
+			Collections.sort(orderArray);
+			for(fastaOrder i : orderArray) {
+				System.out.println(i.getCount() + " " + i.getSeq());
+				writer.write(i.getCount() + "   " + i.getSeq()+"\n");
+			}
 		
 		writer.close();
 	}
@@ -122,7 +132,36 @@ public class FastaSequence
 		return gcTotal/totalLength;
 	}
 	
-	
+	static class fastaOrder implements Comparable<fastaOrder>
+	{
+		private final Integer count;
+		private final String sequence;
+		
+		public fastaOrder(Integer count, String sequence) 
+		{
+			this.count = count;
+			this.sequence = sequence;
+		}
+		
+		public Integer getCount()
+		{
+			return count;
+		}
+		public String getSeq()
+		{
+			return sequence;
+		}
+		@Override
+		public int compareTo(fastaOrder nextFasta)
+		{
+			int compareFasta = ((fastaOrder) nextFasta).getCount();
+			//descending
+			//return compareFasta - this.count;
+			return this.count - compareFasta;
+		}
+		
+		
+	}
 	
 	
 	
@@ -139,8 +178,7 @@ public class FastaSequence
 			System.out.println(fs.getGCRatio());
 		}
 		
-		System.out.println("part2");
-		File inputFile= new File(filePath);
+		System.out.println("\nPart 2: Counting and ordering unique sequences.");
 		File outFile=new File("/home/rosh/Desktop/output.fasta");
 		
 		writeUnique(filePath, outFile);
