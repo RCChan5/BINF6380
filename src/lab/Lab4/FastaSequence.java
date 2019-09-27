@@ -1,9 +1,10 @@
-package lab;
+package lab.Lab4;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.*;
+import java.io.FileWriter;
 import java.util.*;
 
 
@@ -74,12 +75,30 @@ public class FastaSequence
 	 * writes each unique sequence to the output file with the # of times each sequence was 
 	 * Seen in the input file as the header (sorted with the sequence seen the fewest times the first)
 	 */
-	public static void writeUnique(File inFile, File outFile ) throws Exception
+	public static void writeUnique(String filePath, File outFile ) throws Exception
 	{
-	
+		BufferedWriter writer = new BufferedWriter(new FileWriter(outFile));		
+		List<FastaSequence> fastaList = FastaSequence.readFastaFile(filePath);	
+		HashMap<String, Integer> hash_map = new HashMap<String, Integer>();
 		
+		//iterate through lsit object and append to has map value
+		for( FastaSequence fs : fastaList) 
+		{
+			System.out.println(fs.getSequence());
+			if(hash_map.get(fs.getSequence())!= null) {
+				hash_map.put(fs.getSequence(),hash_map.get(fs.getSequence())+1);
+			}
+			else {
+				hash_map.put(fs.getSequence(),1);
+			}
+		}
 		
+		System.out.println(hash_map);
 		
+		//return output as file
+			
+		
+		writer.close();
 	}
 	
 	// returns the header of this sequence without the “>”
@@ -107,9 +126,11 @@ public class FastaSequence
 	
 	
 	
+	
 	public static void main(String[] args) throws Exception
 	{
-		List<FastaSequence> fastaList = FastaSequence.readFastaFile("/home/rosh/Desktop/example.fasta");
+		String filePath="/home/rosh/Desktop/example.fasta";
+		List<FastaSequence> fastaList = FastaSequence.readFastaFile(filePath);
 		
 		for( FastaSequence fs : fastaList)
 		{
@@ -117,7 +138,16 @@ public class FastaSequence
 			System.out.println(fs.getSequence());
 			System.out.println(fs.getGCRatio());
 		}
+		
+		System.out.println("part2");
+		File inputFile= new File(filePath);
+		File outFile=new File("/home/rosh/Desktop/output.fasta");
+		
+		writeUnique(filePath, outFile);
+		
 	}
+
+
 	
 	
 	
