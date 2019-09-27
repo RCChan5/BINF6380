@@ -1,4 +1,4 @@
-package lab;
+package lab.Lab4;
 /*
  * For extra-credit:
 
