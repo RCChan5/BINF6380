@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -25,97 +26,78 @@ no more sequences…
  */
 
 
+/*
+ * since FileReader can read one line at a time and basically keep its location while iterating through a text file.
+ * I use that to and make it so that an object stores the FileReader object. Due to how fasta files are, i need a way to check 
+ * when the sequence ends and while using FileReader which just iterates through so i wont be able to get the next seqID unless i 
+ * move within the position of the text file hence why I used a variable to store seq ID's 
+ * 
+ * by doing this I can add methods like getCurrentSequence()
+ */
 public class ExtraCredit
 {
-	//object needs to store position and changes it every time the next() method is called 
+	//object/instance variables
+	private BufferedReader reader;
+	private String nextID = null;
+	private String seq="";
 	//constructor
 	public ExtraCredit(String location) throws Exception
 	{
-		BufferedReader reader = new BufferedReader(new FileReader(new File(location)));
-
-		//using linked hash map just in case order of fasta file matter
-		LinkedHashMap<String, String> hash_map = new LinkedHashMap<String, String>();
-		String key = null;
-		
-		//
-		//*****instead of sing this for loop keep it pointng at the start till nextseq  
-		//i dont know bufferedREader as well ask later
-		for(String nextLine =reader.readLine(); nextLine != null;nextLine=reader.readLine()) 
-		{	
-
-			if (nextLine.startsWith(">")) 
-			{	
-				key = nextLine;
-				//System.out.println(key);
-			}
-			else
-			{
-				//if else is for multi line fasta files so null value is not appended into value
-				if(hash_map.get(key)==null) {
-					hash_map.put(key,nextLine);
-				}
-				else {
-					hash_map.put(key,hash_map.get(key)+nextLine);
-				}
-			}
-			
-		}	
-		System.out.println("test");
+		this.reader = new BufferedReader(new FileReader(new File(location)));
 	
 	}
 /*
  * method to just print sequence to text file
  */
-public static void fileWriter(ArrayList<String> results, String location) throws Exception
-{
-		BufferedWriter writer = new BufferedWriter(new FileWriter(new File(location)));
-		
+public static void fileWriter(String results) throws Exception
+{		
+		//hard code output location can be changed to user input but for convenience hard coded
+		BufferedWriter writer = new BufferedWriter(new FileWriter(new File("/home/rosh/Desktop/output.fasta")));
+		writer.append(results);
 					
 		writer.flush();
 		writer.close();
 }
 
-public static String getNextFastaSequence() 
-{	
-	BufferedReader reader = new BufferedReader(new FileReader(new File(location)));
-	
-	//using linked hash map just in case order of fasta file matter
-	LinkedHashMap<String, String> hash_map = new LinkedHashMap<String, String>();
-	String key = null;
-	
-	//parses fasta file into linked hashmap
-	for(String nextLine =reader.readLine(); nextLine != null;nextLine=reader.readLine()) 
-	{	
 
-		if (nextLine.startsWith(">")) 
-		{	
-			key = nextLine;
-			//System.out.println(key);
-		}
-		else
+public void getNextFastaSequence() throws Exception 
+{	
+	boolean stop = false;
+	while(stop == false) 
+	{
+		System.out.println("loop started");
+		String currentLine = reader.readLine();
+		if (currentLine.startsWith(">") && nextID ==null) 
 		{
-			//if else is for multi line fasta files so null value is not appended into value
-			if(hash_map.get(key)==null) {
-				hash_map.put(key,nextLine);
-			}
-			else {
-				hash_map.put(key,hash_map.get(key)+nextLine);
-			}
+			System.out.println(currentLine+"A");
+			fileWriter(currentLine);
+			this.nextID = currentLine;
 		}
-		
+		else if (currentLine.startsWith(">") && nextID !=null) 
+		{
+			this.nextID = currentLine;
+			stop = true;
+			//fileWriter(seq);
+		}
+		else 
+		{
+			
+			this.seq+=currentLine;
+			System.out.println(seq+"B");
+		}
+	
+	
 	}	
-	
-	
-	return null;	
 }
 	
-public static void main(String[] args)
+public static void main(String[] args) throws Exception
 {
 	//while(getNextFastaSequence()!=null) 
 	
-	ExtraCredit x1 = new ExtraCredit();
-		
-	
+	ExtraCredit x1 = new ExtraCredit("/home/rosh/Desktop/example.fasta");
+	//System.out.println(x1.getNextFastaSequence());
+	x1.getNextFastaSequence();
+	System.out.println("done");
 }
 
 }
