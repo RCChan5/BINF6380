@@ -33,12 +33,15 @@ no more sequences…
  * move within the position of the text file hence why I used a variable to store seq ID's 
  * 
  * by doing this I can add methods like getCurrentSequence()
+ * 
+ * 2 objects are being used in this program the first is an object of the extracredit class and this instance holds the iterator for the fasta file
+ * and the brains for knowing when to stop or not the other is the fastasequnce instance which holds the header and seq which is returned when getNextFasta
+ * is called
  */
 public class ExtraCredit
 {
 	//object/instance variables
 	private BufferedReader reader;
-	private String ID =null;
 	private String nextID = null;
 	private String seq="";
 	private FastaSequence instance;
@@ -84,25 +87,19 @@ public FastaSequence getNextFastaSequence() throws Exception
 		//first sequence
 		else if (currentLine.startsWith(">") && nextID ==null) 
 		{	
-			this.ID = currentLine;
 			this.nextID=currentLine;
 		}
 		
 		else if (currentLine.startsWith(">") && nextID !=null) 
 		{
-			//System.out.println("stop");
 			stop = true;
-			//writer.append(nextID+"\n");
 			instance.setHeader(nextID);
 			instance.setSequence(seq);
-			this.nextID = currentLine;
-			//writer.append(seq);
-			
+			this.nextID = currentLine;			
 		}
-		//fasta seq part
+		//fasta body else
 		else 
 		{
-			//System.out.println("else");
 			this.seq+=currentLine;
 		}
 	
@@ -110,19 +107,17 @@ public FastaSequence getNextFastaSequence() throws Exception
 	}	
 	writer.flush();
 	writer.close();
-	//System.out.println(this.ID);
-	//System.out.println(this.seq);
-	//System.out.println(x1.getHeader());
 	
 	return instance;
 }
 	
 public static void main(String[] args) throws Exception
 {
-	//while(getNextFastaSequence()!=null) 
+	
 	
 	ExtraCredit x1 = new ExtraCredit("/home/rosh/Desktop/example.fasta");
-	//System.out.println(x1.getNextFastaSequence());
+
+	
 	FastaSequence hold=x1.getNextFastaSequence();
 	System.out.println("1st fasta sequence");
 	System.out.println(hold.getHeader());
