@@ -38,13 +38,15 @@ public class ExtraCredit
 {
 	//object/instance variables
 	private BufferedReader reader;
+	private String ID =null;
 	private String nextID = null;
 	private String seq="";
-
+	private FastaSequence instance;
 	//constructor
-	public ExtraCredit(String location) throws Exception
+public ExtraCredit(String location) throws Exception
 	{
 		this.reader = new BufferedReader(new FileReader(new File(location)));
+		
 	
 	}
 
@@ -53,43 +55,54 @@ public FastaSequence getNextFastaSequence() throws Exception
 	BufferedWriter writer = new BufferedWriter(new FileWriter(new File("/home/rosh/Desktop/output.fasta")));
 	boolean stop = false;
 	this.seq="";
+	this.instance = new FastaSequence(nextID, seq);
+	
+
 	//while loop that stops when readlines hits a new > and stores the new id into memory for next get()
 	while(stop == false) 
 	{
-		System.out.println("loop start");
+		
+		//System.out.println("loop start");
 		String currentLine = reader.readLine();
-		System.out.println(currentLine);
+		//System.out.println(currentLine);
+		//ENDING last sequence 
 		if (currentLine==null && nextID != null) {
 			stop = true;
-			writer.append(nextID+"\n");
-			writer.append(seq);
+			//writer.append(nextID+"\n");
+			//writer.append(seq);
+		
+			instance.setHeader(this.nextID);
+			instance.setSequence(this.seq);
 			this.nextID = null;
 			//return null
 		}
 		else if(currentLine==null && nextID == null) 
 		{
-			System.out.println("you cant do this");
+			System.out.println("There are no more sequences in the fasta file");
 			break;
 		}
+		//first sequence
 		else if (currentLine.startsWith(">") && nextID ==null) 
 		{	
-			this.nextID = currentLine;
+			this.ID = currentLine;
+			this.nextID=currentLine;
 		}
+		
 		else if (currentLine.startsWith(">") && nextID !=null) 
 		{
-			System.out.println("stop");
+			//System.out.println("stop");
 			stop = true;
-			writer.append(nextID+"\n");
+			//writer.append(nextID+"\n");
+			instance.setHeader(nextID);
+			instance.setSequence(seq);
 			this.nextID = currentLine;
-			writer.append(seq);
+			//writer.append(seq);
+			
 		}
-//		else if(currentLine == null){
-//			System.out.print("endend");
-//			break;
-//		}
+		//fasta seq part
 		else 
 		{
-			System.out.println("else");
+			//System.out.println("else");
 			this.seq+=currentLine;
 		}
 	
@@ -97,7 +110,11 @@ public FastaSequence getNextFastaSequence() throws Exception
 	}	
 	writer.flush();
 	writer.close();
-	return null;
+	//System.out.println(this.ID);
+	//System.out.println(this.seq);
+	//System.out.println(x1.getHeader());
+	
+	return instance;
 }
 	
 public static void main(String[] args) throws Exception
@@ -106,10 +123,17 @@ public static void main(String[] args) throws Exception
 	
 	ExtraCredit x1 = new ExtraCredit("/home/rosh/Desktop/example.fasta");
 	//System.out.println(x1.getNextFastaSequence());
-	x1.getNextFastaSequence();
-	System.out.println("2nd time");
-	x1.getNextFastaSequence();
-	System.out.println("3nd time");
+	FastaSequence hold=x1.getNextFastaSequence();
+	System.out.println("1st fasta sequence");
+	System.out.println(hold.getHeader());
+	System.out.println(hold.getSequence());
+	
+	System.out.println("2nd fasta sequence");
+	hold=x1.getNextFastaSequence();
+	System.out.println(hold.getHeader());
+	System.out.println(hold.getSequence());
+	
+	System.out.println("3nd time no sequence here");
 	x1.getNextFastaSequence();
 	System.out.println("done");
 }

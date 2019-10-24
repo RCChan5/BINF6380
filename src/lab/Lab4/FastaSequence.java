@@ -14,8 +14,8 @@ import java.util.*;
 public class FastaSequence
 {
 	//class variables
-	private final String header;
-	private final String sequence;
+	private String header;
+	private String sequence;
 	
 	
 	//constructor
@@ -111,6 +111,20 @@ public class FastaSequence
 		writer.close();
 	}
 	
+	
+	
+	public void setHeader(String header)
+	{
+		this.header = header;
+	}
+	
+	public void setSequence(String Sequence)
+	{
+		this.sequence = Sequence;
+	}
+	
+	
+	
 	// returns the header of this sequence without the “>”
 	public String getHeader()
 	{
@@ -186,6 +200,7 @@ public class FastaSequence
 	}
 
 
+	
 	
 	
 	
