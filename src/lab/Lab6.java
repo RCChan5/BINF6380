@@ -3,14 +3,8 @@ package lab;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.util.Random;
-
 import javax.swing.*;
-
-
 
 
 
@@ -20,20 +14,18 @@ public class Lab6 extends JFrame
 	private static final long serialVersionUID = 1L;
 	
 	//basic frame
-	private JTextField answerTextField = new JTextField();
+	private static JTextField answerTextField = new JTextField();
 	//new button with name
-	private JTextField timerTextField = new JTextField();
+	private static JLabel timerTextField = new JLabel();
 	//private static JTextField timerTextField = new JTextField();
-	private JLabel questionText = new JLabel();
-	private JLabel scoreBoard = new JLabel();
-	private JButton startButton = new JButton("Begin Quiz");
-	private JButton cancelButton = new JButton("Cancel");
+	private static JLabel questionText = new JLabel();
+	private static JLabel scoreBoard = new JLabel();
+	private static JButton startButton = new JButton("Begin Quiz");
+	private static JButton cancelButton = new JButton("Cancel");
 	private volatile static boolean Continue = true;
 	private static final Random random = new Random();
-	private static final int SECONDS = 15;
-	private int score=0;
-	private int right=0;
-	private int wrong=0;
+	private static int right=0;
+	private static int wrong=0;
 	private String aminoAcidName;
 	private String aminoCode;
 	
@@ -56,65 +48,46 @@ public class Lab6 extends JFrame
 		"tyrosine", "valine"
 	};
 	
-	//currently working
+	
 	private class startActionListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent arg0)
 		{
-		//updateTextField(;
-			
+			System.out.println("Start Button : " + Thread.currentThread().getName());
 			startButton.setEnabled(false);
-			//questionText.setEnabled(true);
 			cancelButton.setEnabled(true);
 			questionText.setEnabled(true);
 			answerTextField.setEditable(true);
-			System.out.println("Game Started");
+			System.out.println("Start Button: Game Started");
 			right=0;
-			score=0;
+			wrong=0;
 			Continue = true;
+
 			getQuestion();
 			updateTextField("");
+			updateScoreBoard(right, wrong);
+			new Thread(new timer2()).start();
 		}
 	}
-	//ideal
-	private class StartGameListener implements ActionListener
-	{
-		public void actionPerformed(ActionEvent arg0)
-		{
-			(new Thread(new Timer())).start();
-//			startGame.setEnabled(false);
-//			answerBox.setEnabled(true);
-//			cancel.setEnabled(true);
-			Continue = true;
-			right = 0;		
-			score = 0;
-			getQuestion();
-		}
-	}
-	
 	
 	private class answerListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e){
 			String input = answerTextField.getText().toUpperCase();
-			System.out.println("RIGHT HERE:"+input);
+			System.out.println("USER INPUT: "+input);
 			if (Continue == true) {
-			if (input.equals(aminoAcidName)) 				
+			if (input.equals(aminoCode)) 				
 			{
 				right++;
-				System.out.println("correct");
-				//updateStartGame("Correct! " + right);
+				System.out.println("anwerListener: Correct");
 			}
 			else 
 			{
-				System.out.println("Wrong");
-				//updateStartGame("Incorrect! It's " + aminoAcidName + ".");
+				System.out.println("anwerListener: Wrong");
 				wrong++;
 			} 
-			//count += 1;
-			
 			answerTextField.setText("");
-			
+			updateScoreBoard(right, wrong);
 			getQuestion();
 			
 			}
@@ -127,50 +100,46 @@ public class Lab6 extends JFrame
 			//answerBox.setEditable(false);
 			startButton.setEnabled(true);
 			cancelButton.setEnabled(false);
-			updateTextField("You got ".concat(Integer.valueOf(score).toString().concat(" correct! Click Begin to play again!")));
+			updateTextField("You got: Right: "+ right+ " Wrong: "+wrong+" Click Begin Quiz to play again.");
 			questionText.setText("Your Quetion will appear here:");
 			//updateStartGame("Start the game");
+			answerTextField.setEditable(false);
+			startButton.setEnabled(true);
+			cancelButton.setEnabled(false);
 			Continue = false;
-//			try{  
-//			Timer.interrupt();  
-//			}catch(Exception e1){System.out.println("Exception handled "+e1);}  
+			try
+			{  
+				timer2.interrupt();  
+			}
+			catch(Exception e1)
+			{
+				System.out.println("endGameListener: Exception "+e1);
+			}  
 		
 		}
 	}
+
 	
-	private JMenuBar getMyMenuBar()
-	{
-		JMenuBar jmenuBar = new JMenuBar();
-		JMenu fileMenu = new JMenu("File");
-		jmenuBar.add(fileMenu);
-		
-		JMenuItem saveItem = new JMenuItem("Save");
-		fileMenu.add(saveItem);
-		saveItem.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent e) 
-			{
-				saveToFile();
-			}
-		});
-		return jmenuBar;
-		
-	}
-	
-	private void updateTextField(String message)
+	private static void updateTextField(String message)
 	{
 		answerTextField.setText(message);
 	}
 	
-	private void updateTimer(String message) 
+	private static void updateTimer(String message) 
 	{
 		timerTextField.setText(message);
 	}
 	
-	private void updateQuestion(String message) 
+	private static void updateQuestion(String message) 
 	{
 		questionText.setText(message);
 	}
+	
+	private static void updateScoreBoard(int right, int wrong) 
+	{
+		scoreBoard.setText("Right: "+right+" Wrong: "+wrong);
+	}
+	
 	
 	private JPanel getBottomPanel()
 	{
@@ -180,94 +149,59 @@ public class Lab6 extends JFrame
 		startButton.addActionListener(new startActionListener());
 		panel.add(cancelButton);
 		cancelButton.setEnabled(false);
-		//add action listener to button to cancel
+		cancelButton.addActionListener(new endGameListener());
+		
 		return panel;
 	}
 
-	private void saveToFile()
+	private static class timer2 implements Runnable
 	{
-		JFileChooser jfc = new JFileChooser();
-		
-		if( jfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+		public void run()
 		{
-			return;
-		}
-		if( jfc.getSelectedFile() == null)
-		{
-			return;
-		}
-		
-		File chosenFile = jfc.getSelectedFile();
-		
-		if( jfc.getSelectedFile().exists()) 
-		{
-			String message = "File "+jfc.getSelectedFile().getName() + " exists. Overwrite?";
-			if( JOptionPane.showConfirmDialog(this, message) != JOptionPane.YES_OPTION)
+			try
 			{
-				return;
+				int numTimes =16;
+				
+				while(Continue && numTimes>0)
+				{
+					numTimes--;
+					updateTimer("Time Left: "+numTimes);
+					Thread.sleep(1000);
+				}
+				updateTextField("You got: Right: "+right+" Wrong: "+wrong+" Click Begin Quiz to play again." );
+				answerTextField.setEditable(false);
+				startButton.setEnabled(true);
+				cancelButton.setEnabled(false);
+				Continue = false;
+			}
+			catch(Exception ex)
+			{
+				System.out.println("exception in timer2 "+ex);
 			}
 		}
-		
-		try
-		{
-			BufferedWriter writer = new BufferedWriter(new FileWriter(chosenFile));
-			writer.write(""+this.score+"\n");
-			writer.flush();
-//			writer.close();
+
+		public static void interrupt() {
+			// TODO Auto-generated method stub
+			System.out.println("timer was interputed");
 		}
-		
-		catch(Exception ex)
-		{
-			ex.printStackTrace();
-			JOptionPane.showMessageDialog(this, ex.getMessage(), "Could not write file", JOptionPane.ERROR_MESSAGE);
-		}
-		
-		
 	}
 	
-	private class Timer implements Runnable
-	{	
-		@Override
-		public void run() {
-		try{		
-			for (int i = SECONDS; i > 0; i--) {
-				System.out.println("sleeping");
-				Thread.sleep(1000);
-				updateTimer(Integer.valueOf(i).toString());
-			}
-			updateTextField("Time's up! You correctly got ".concat(Integer.valueOf(right).toString().concat(" correct!")));
-//			answerBox.setEditable(false);
-//			startGame.setEnabled(true);
-//			cancel.setEnabled(false);
-//			Continue = false;
-//			updateStartGame("Start the game");
-			}catch(InterruptedException e){  
-			throw new RuntimeException("Thread interrupted..."+e);  
-			}
-			
-		}
-
-		public void interrupt() {
-			System.out.println("Stoped");
-			
-		}  
-	}
-
 	
 	public void getQuestion()
 	{
 		if (Continue == true){
 			int amino = random.nextInt(20);
-			System.out.println(amino);
+		
 			aminoAcidName = FULL_NAMES[amino];
-			System.out.println(amino);
+			
 			aminoCode = SHORT_NAMES[amino];
-			System.out.println(right);
+			
 			
 			updateQuestion("What is " + aminoAcidName + "?");
-			System.out.println(aminoAcidName);
+			System.out.println("getQuestion: "+aminoAcidName);
+			System.out.println("getQuestion: "+aminoCode);
 			}else {
-				System.out.println("The random int has gone over array length this is imposible");
+				System.out.println("getQuestion: The random int has gone over array length this is imposible");
 			}
 	}
 	
@@ -283,20 +217,22 @@ public class Lab6 extends JFrame
 		getContentPane().add(timerTextField, BorderLayout.NORTH);
 		timerTextField.setText("You have 15 Seconds to solve as many questions as you can.");
 		
+		//score board
 		getContentPane().add(scoreBoard, BorderLayout.WEST);
 		
-		
+		//question box (right)
 		getContentPane().add(questionText, BorderLayout.EAST);
 		questionText.setText("Your Quetion will appear here:");
+		
+		//answer input box
 		getContentPane().add(answerTextField, BorderLayout.CENTER);
 		answerTextField.setText("Type Your Answer in here.");
-		
 		answerTextField.setEditable(false);
 		answerTextField.addActionListener(new answerListener());
 		
-		setJMenuBar(getMyMenuBar());
+		//buttons
 		getContentPane().add(getBottomPanel(), BorderLayout.SOUTH);
-		cancelButton.addActionListener(new endGameListener());
+		
 
 	
 	setVisible(true);
@@ -311,3 +247,5 @@ public class Lab6 extends JFrame
    
 
 }
+
+
