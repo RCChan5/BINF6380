@@ -22,7 +22,7 @@ public class Lab6 extends JFrame
 	private static JLabel scoreBoard = new JLabel();
 	private static JButton startButton = new JButton("Begin Quiz");
 	private static JButton cancelButton = new JButton("Cancel");
-	private volatile static boolean Continue = true;
+	private volatile static boolean keepGoing = true;
 	private static final Random random = new Random();
 	private static int right=0;
 	private static int wrong=0;
@@ -49,7 +49,7 @@ public class Lab6 extends JFrame
 	};
 	
 	
-	private class startActionListener implements ActionListener
+	private class StartActionListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent arg0)
 		{
@@ -61,21 +61,21 @@ public class Lab6 extends JFrame
 			System.out.println("Start Button: Game Started");
 			right=0;
 			wrong=0;
-			Continue = true;
+			keepGoing = true;
 
 			getQuestion();
 			updateTextField("");
 			updateScoreBoard(right, wrong);
-			new Thread(new timer2()).start();
+			new Thread(new Timer2()).start();
 		}
 	}
 	
-	private class answerListener implements ActionListener
+	private class AnswerListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e){
 			String input = answerTextField.getText().toUpperCase();
 			System.out.println("USER INPUT: "+input);
-			if (Continue == true) {
+			if (keepGoing == true) {
 			if (input.equals(aminoCode)) 				
 			{
 				right++;
@@ -94,7 +94,7 @@ public class Lab6 extends JFrame
 		}
 		}
 	
-	private class endGameListener implements ActionListener
+	private class EndGameListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e){
 			//answerBox.setEditable(false);
@@ -106,10 +106,10 @@ public class Lab6 extends JFrame
 			answerTextField.setEditable(false);
 			startButton.setEnabled(true);
 			cancelButton.setEnabled(false);
-			Continue = false;
+			keepGoing = false;
 			try
 			{  
-				timer2.interrupt();  
+				Timer2.interrupt();  
 			}
 			catch(Exception e1)
 			{
@@ -146,15 +146,15 @@ public class Lab6 extends JFrame
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(0,2));
 		panel.add(startButton);
-		startButton.addActionListener(new startActionListener());
+		startButton.addActionListener(new StartActionListener());
 		panel.add(cancelButton);
 		cancelButton.setEnabled(false);
-		cancelButton.addActionListener(new endGameListener());
+		cancelButton.addActionListener(new EndGameListener());
 		
 		return panel;
 	}
 
-	private static class timer2 implements Runnable
+	private static class Timer2 implements Runnable
 	{
 		public void run()
 		{
@@ -162,17 +162,31 @@ public class Lab6 extends JFrame
 			{
 				int numTimes =16;
 				
-				while(Continue && numTimes>0)
+				while(keepGoing && numTimes>0)
 				{
 					numTimes--;
 					updateTimer("Time Left: "+numTimes);
 					Thread.sleep(1000);
 				}
-				updateTextField("You got: Right: "+right+" Wrong: "+wrong+" Click Begin Quiz to play again." );
-				answerTextField.setEditable(false);
-				startButton.setEnabled(true);
-				cancelButton.setEnabled(false);
-				Continue = false;
+				
+				keepGoing = false;
+				
+				SwingUtilities.invokeLater(new Runnable()
+				{
+					
+					@Override
+					public void run()
+					{
+
+						
+						updateTextField("You got: Right: "+right+" Wrong: "+wrong+" Click Begin Quiz to play again." );
+						answerTextField.setEditable(false);
+						startButton.setEnabled(true);
+						cancelButton.setEnabled(false);
+						
+					}
+				});
+				
 			}
 			catch(Exception ex)
 			{
@@ -189,7 +203,7 @@ public class Lab6 extends JFrame
 	
 	public void getQuestion()
 	{
-		if (Continue == true){
+		if (keepGoing == true){
 			int amino = random.nextInt(20);
 		
 			aminoAcidName = FULL_NAMES[amino];
@@ -228,7 +242,7 @@ public class Lab6 extends JFrame
 		getContentPane().add(answerTextField, BorderLayout.CENTER);
 		answerTextField.setText("Type Your Answer in here.");
 		answerTextField.setEditable(false);
-		answerTextField.addActionListener(new answerListener());
+		answerTextField.addActionListener(new AnswerListener());
 		
 		//buttons
 		getContentPane().add(getBottomPanel(), BorderLayout.SOUTH);
