@@ -1,9 +1,7 @@
 package lab;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Random;
 import javax.swing.*;
 
 
@@ -12,57 +10,40 @@ public class Lab7 extends JFrame
 {
 
 	private static final long serialVersionUID = 1L;
-	
 	//basic frame
 	private static JTextField answerTextField = new JTextField();
 	//new button with name
-	private static JLabel timerTextField = new JLabel();
-	
-	private static JButton startButton = new JButton("Find Factorial");
+	private static JLabel topPanel = new JLabel();
+
+	private static JTextArea ta = new JTextArea();
+	private static JScrollPane CenterPanel = new JScrollPane(ta);
+	private static JButton startButton = new JButton("Find Prime Number");
 	private static JButton cancelButton = new JButton("Cancel");
 	private volatile static boolean Continue = true;
 	private static Long number;
-
-	
-	public static String[] SHORT_NAMES = 
-	{
-		"A","R", "N", "D", "C", "Q", "E", 
-		"G",  "H", "I", "L", "K", "M", "F", 
-		"P", "S", "T", "W", "Y", "V" 
-	};
-
-	public static String[] FULL_NAMES = 
-	{
-		"alanine","arginine", "asparagine", 
-		"aspartic acid", "cysteine",
-		"glutamine",  "glutamic acid",
-		"glycine" ,"histidine","isoleucine",
-		"leucine",  "lysine", "methionine", 
-		"phenylalanine", "proline", 
-		"serine","threonine","tryptophan", 
-		"tyrosine", "valine"
-	};
 	
 	
 	private class startActionListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent arg0)
 		{
+			// this panel gets user input
 			new OptionPane();
-			System.out.println("Start Button : " + Thread.currentThread().getName());
+			//log
+			System.out.println("LOG: Start Button : " + Thread.currentThread().getName());
+			System.out.println("LOG: Start Button: Clicked");
 			
-			System.out.println("Start Button: Started");
-		
 			Continue = true;
 
 			if (number != null) 
 			{
-				new Thread(new timer2()).start();
-				System.out.println("StartActionListener " + number);
+				new Thread(new primeFinder()).start();
+				System.out.println("LOG: StartActionListener " + number);
 				startButton.setEnabled(false);
 				cancelButton.setEnabled(true);
 			}
 			else {
+				System.out.println("LOG: StartActionListener invalid input");
 				startButton.setEnabled(true);
 				cancelButton.setEnabled(false);
 				
@@ -81,7 +62,7 @@ public class Lab7 extends JFrame
 			
 			try
 			{  
-				timer2.interrupt();  
+				primeFinder.interrupt();  
 			}
 			catch(Exception e1)
 			{
@@ -91,13 +72,26 @@ public class Lab7 extends JFrame
 		}
 	}
 
-
-	private static void updateResults(String message) 
+	//Method to update center panel text
+	private static void updateCenterPanel(String message) 
 	{
-		timerTextField.setText(message);
+		ta.append(message);
+	}
+	//Method to update top panel text
+	private static void updateTopPanel(String message) 
+	{
+		topPanel.setText(message);
+		updateScroll();
+	}
+	//Method to update jscrollpanel to lowest point (not needed)
+	private static void updateScroll() 
+	{
+	JScrollBar sb = CenterPanel.getVerticalScrollBar();
+	sb.setValue( sb.getMaximum() );
+	
 	}
 	
-
+	
 	private JPanel getBottomPanel()
 	{
 		JPanel panel = new JPanel();
@@ -111,53 +105,33 @@ public class Lab7 extends JFrame
 		return panel;
 	}
 
-	private static class timer2 implements Runnable
+	private static class primeFinder implements Runnable
 	{
 		public void run()
 		{
+			//to do rework timer 
 			try
-			{
-				int numTimes =16;
+			{	
+				long startTime = System.nanoTime();
+				int counter =1;
+				int primeFound = 0;
+				updateTopPanel("user input "+number);
 				
-				while(Continue && numTimes>0)
+				while(Continue && counter<number+1)
 				{
-					numTimes--;
-					updateResults("Time Left: "+numTimes);
-					Thread.sleep(1000);
+					if (isPrime(counter)) {
+						updateCenterPanel("Prime found: "+counter+"\n");
+						primeFound++;
+					}
+					counter++;
+					long endTime = System.nanoTime();
+					long duration = (endTime - startTime)/1000000;  //divide by 1000000 to get milliseconds.
+					
+					updateTopPanel("Inputed Number: "+number+"     Time Elapsed: "+duration+" Miliseconds "+"     Primes Found: "+primeFound);
 				}
 				//updateTextField("You got: Right: "+right+" Wrong: "+wrong+" Click Begin Quiz to play again." );
-				answerTextField.setEditable(false);
-				startButton.setEnabled(true);
-				cancelButton.setEnabled(false);
-				Continue = false;
-			}
-			catch(Exception ex)
-			{
-				System.out.println("exception in timer2 "+ex);
-			}
-		}
-
-		public static void interrupt() {
-			// TODO Auto-generated method stub
-			System.out.println("timer was interputed");
-		}
-	}
-	
-	private static class factorial implements Runnable
-	{
-		public void run()
-		{
-			try
-			{
-				int numTimes =16;
 				
-				while(Continue && numTimes>0)
-				{
-					numTimes--;
-					updateResults("Time Left: "+numTimes);
-					Thread.sleep(1000);
-				}
-			
+				//end conditions for gui
 				answerTextField.setEditable(false);
 				startButton.setEnabled(true);
 				cancelButton.setEnabled(false);
@@ -165,17 +139,28 @@ public class Lab7 extends JFrame
 			}
 			catch(Exception ex)
 			{
-				System.out.println("exception in timer2 "+ex);
+				System.out.println("exception in primeFinder "+ex);
 			}
 		}
 
 		public static void interrupt() {
 			// TODO Auto-generated method stub
-			System.out.println("timer was interputed");
+			System.out.println("primeFinder was interputed");
+			updateCenterPanel("Canceled");
 		}
 	}
-	
-	
+
+	public static boolean isPrime(int num) {
+		   if (num <= 1) {
+		       return false;
+		   }
+		   for (int i = 2; i <= Math.sqrt(num); i++) {
+		       if (num % i == 0) {
+		           return false;
+		       }
+		   }
+		   return true;
+	}
 	
 	public static class OptionPane {  
 		JFrame f;  
@@ -184,7 +169,7 @@ public class Lab7 extends JFrame
 		    f=new JFrame();   
 		    
 		    String input=JOptionPane.showInputDialog(f,"Enter A Number Here: ");   	
-		    System.out.println("OptionPane: "+input);
+		    System.out.println("LOG: OptionPane: "+input);
 		    
 		   
 		    try 
@@ -193,7 +178,7 @@ public class Lab7 extends JFrame
 		    	
 		    }
 		    catch(Exception e){
-		    	System.out.println("OptionPane "+e);
+		    	System.out.println("LOG: OptionPane "+e);
 		    }
 		    
 		}
@@ -202,15 +187,17 @@ public class Lab7 extends JFrame
 	public Lab7()
 	{
 		
-		super("Amino Acid Quiz");
+		super("Prime Number Finder ");
 		setLocationRelativeTo(null);
 		setSize(800,400);
+		//default behavior is to simply hide the JFrame when the user closes the window
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		getContentPane().setLayout(new BorderLayout());
-		getContentPane().add(timerTextField, BorderLayout.CENTER);
-		timerTextField.setText("Your working Factorial will apear here.");
-		  
+		getContentPane().add(topPanel, BorderLayout.NORTH);
+		getContentPane().add(CenterPanel, BorderLayout.CENTER);
+		topPanel.setText("Click the Find Prime number button and input a number.\n");
+		
 		//buttons
 		getContentPane().add(getBottomPanel(), BorderLayout.SOUTH);
 		
@@ -219,7 +206,7 @@ public class Lab7 extends JFrame
 	setVisible(true);
 		
 	}
-	
+
 	public static void main(String[] args) 
 	{
 		new Lab7();
@@ -227,5 +214,8 @@ public class Lab7 extends JFrame
    
 
 }
+
+
+
 
 
