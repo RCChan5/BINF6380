@@ -1,9 +1,15 @@
 package lab;
+//Questions
+//Is storing all output as a string acceptable? what would be a more elegant way of doing it?
+//
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
 
+
+// to do (for lab 8
+// move timer to its own thread? or keep it on the awt thread depends on if i time each thread or not?
 
 
 public class Lab7 extends JFrame 
@@ -14,31 +20,30 @@ public class Lab7 extends JFrame
 	private static JTextField answerTextField = new JTextField();
 	//new button with name
 	private static JLabel topPanel = new JLabel();
-
 	private static JTextArea ta = new JTextArea();
 	private static JScrollPane CenterPanel = new JScrollPane(ta);
-	private static JButton startButton = new JButton("Find Prime Number");
+	private static JLabel rightPanel = new JLabel();
+	private static JButton startButton = new JButton("Find Prime Numbers");
 	private static JButton cancelButton = new JButton("Cancel");
-	private volatile static boolean Continue = true;
-	private static Long number;
+	private volatile static boolean keepWorking = true;
+	private volatile static Long userInput;
+	private volatile static String totalFoundPrimes="===============================================\n";
 	
-	
-	private class startActionListener implements ActionListener
+	private class StartActionListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent arg0)
 		{
 			// this panel gets user input
 			new OptionPane();
-			//log
+			//log for visualizing what is happening
 			System.out.println("LOG: Start Button : " + Thread.currentThread().getName());
 			System.out.println("LOG: Start Button: Clicked");
-			
-			Continue = true;
+			keepWorking = true;
 
-			if (number != null) 
+			if (userInput != null) 
 			{
-				new Thread(new primeFinder()).start();
-				System.out.println("LOG: StartActionListener " + number);
+				new Thread(new PrimeFinder()).start();
+				System.out.println("LOG: StartActionListener " + userInput);
 				startButton.setEnabled(false);
 				cancelButton.setEnabled(true);
 			}
@@ -51,105 +56,144 @@ public class Lab7 extends JFrame
 		}
 	}
 	
-	
-	private class endGameListener implements ActionListener
+	//Cancel button
+	private class EndGameListener implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e){
-			//answerBox.setEditable(false);
 			startButton.setEnabled(true);
 			cancelButton.setEnabled(false);
-			Continue = false;
-			
-			try
-			{  
-				primeFinder.interrupt();  
-			}
-			catch(Exception e1)
-			{
-				System.out.println("endGameListener: Exception "+e1);
-			}  
-		
+			keepWorking = false;
+			totalFoundPrimes+="Canceled\n";
+			SwingUtilities.invokeLater(updateCenterPanel(totalFoundPrimes));
 		}
 	}
 
 	//Method to update center panel text
-	private static void updateCenterPanel(String message) 
+	private static Runnable updateCenterPanel(String message)
 	{
-		ta.append(message);
+		return new Runnable() 
+		{
+			public void run() 
+			{
+				ta.append(message);
+				
+			}
+		};
 	}
-	//Method to update top panel text
-	private static void updateTopPanel(String message) 
+	//for lab 8 adjust output message to take input from a synchronized array to view all threads progress
+	private static Runnable updateRightPanel(String message)
 	{
-		topPanel.setText(message);
-		updateScroll();
+		return new Runnable() 
+		{
+			public void run() 
+			{
+				rightPanel.setText(message);
+			}
+		};
+	}
+
+	//Method to update top panel text
+	private static Runnable updateTopPanel(String message) 
+	{
+		return new Runnable() 
+		{
+			public void run() 
+			{
+				//System.out.println("LOG: Update top panel : " + Thread.currentThread().getName());
+				topPanel.setText(message);
+				SwingUtilities.invokeLater(updateScroll());
+			}
+		};
 	}
 	//Method to update jscrollpanel to lowest point (not needed)
-	private static void updateScroll() 
+	private static Runnable updateScroll() 
 	{
-	JScrollBar sb = CenterPanel.getVerticalScrollBar();
-	sb.setValue( sb.getMaximum() );
-	
+	return new Runnable() 
+	{
+		public void run() 
+		{
+			JScrollBar sb = CenterPanel.getVerticalScrollBar();
+			sb.setValue( sb.getMaximum() );
+			
+		}
+	};
 	}
-	
+	//resets gui at the end of running it will also reset variables used
+	private static Runnable endUpdate() 
+	{
+		return new Runnable() 
+		{
+			public void run() 
+			{
+				answerTextField.setEditable(false);
+				startButton.setEnabled(true);
+				cancelButton.setEnabled(false);
+				keepWorking = false;
+				userInput = null;
+				totalFoundPrimes="===============================================\n";
+				
+			}
+		};
+	}
 	
 	private JPanel getBottomPanel()
 	{
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(0,2));
 		panel.add(startButton);
-		startButton.addActionListener(new startActionListener());
+		startButton.addActionListener(new StartActionListener());
 		panel.add(cancelButton);
 		cancelButton.setEnabled(false);
-		cancelButton.addActionListener(new endGameListener());
+		cancelButton.addActionListener(new EndGameListener());
 		
 		return panel;
 	}
 
-	private static class primeFinder implements Runnable
+	private static class PrimeFinder implements Runnable
 	{
 		public void run()
 		{
-			//to do rework timer 
 			try
 			{	
 				long startTime = System.nanoTime();
 				int counter =1;
 				int primeFound = 0;
-				updateTopPanel("user input "+number);
-				
-				while(Continue && counter<number+1)
+				while(keepWorking && counter<userInput)
 				{
-					if (isPrime(counter)) {
-						updateCenterPanel("Prime found: "+counter+"\n");
+					if (isPrime(counter)) 
+					{
+						totalFoundPrimes+=counter+"\n";
 						primeFound++;
+						
 					}
 					counter++;
+					//timer stuff
 					long endTime = System.nanoTime();
 					long duration = (endTime - startTime)/1000000;  //divide by 1000000 to get milliseconds.
-					
-					updateTopPanel("Inputed Number: "+number+"     Time Elapsed: "+duration+" Miliseconds "+"     Primes Found: "+primeFound);
+					//updates the GUI every 1 second 
+					if(duration%1000==0) {
+						SwingUtilities.invokeLater(updateTopPanel("Inputed Number: "+userInput+"     Time Elapsed: "+duration/1000+" Seconds "+"     Primes Found: "+primeFound));
+						SwingUtilities.invokeLater(updateRightPanel("{"+Thread.currentThread().getName()+"} Total primes found: "+primeFound+"\n"));
+					}
 				}
-				//updateTextField("You got: Right: "+right+" Wrong: "+wrong+" Click Begin Quiz to play again." );
+				long endTime = System.nanoTime();
+				long duration = (endTime - startTime)/1000000;  //divide by 1000000 to get milliseconds.
+				SwingUtilities.invokeLater(updateTopPanel("Inputed Number: "+userInput+"     Time Elapsed: "+duration/1000+" Seconds "+"     Primes Found: "+primeFound));
+				SwingUtilities.invokeLater(updateCenterPanel(totalFoundPrimes));
+				SwingUtilities.invokeLater(updateRightPanel("{"+Thread.currentThread().getName()+"} Total primes found: "+primeFound+"\n"));
+				SwingUtilities.invokeLater(endUpdate());
 				
-				//end conditions for gui
-				answerTextField.setEditable(false);
-				startButton.setEnabled(true);
-				cancelButton.setEnabled(false);
-				Continue = false;
+				
 			}
 			catch(Exception ex)
 			{
-				System.out.println("exception in primeFinder "+ex);
+				System.out.println("Exception in PrimeFinder Method"+ex);
 			}
 		}
 
-		public static void interrupt() {
-			// TODO Auto-generated method stub
-			System.out.println("primeFinder was interputed");
-			updateCenterPanel("Canceled");
-		}
 	}
-
+	
+	//method that returns true or false if inputed userInput is prime or not
 	public static boolean isPrime(int num) {
 		   if (num <= 1) {
 		       return false;
@@ -167,14 +211,13 @@ public class Lab7 extends JFrame
 		OptionPane()
 		{  
 		    f=new JFrame();   
-		    
-		    String input=JOptionPane.showInputDialog(f,"Enter A Number Here: ");   	
+		    // this is to reset any prior user inputs
+		    String input = null;
+		    input =JOptionPane.showInputDialog(f,"Enter A Number Here: ");   	
 		    System.out.println("LOG: OptionPane: "+input);
-		    
-		   
 		    try 
 		    {
-		    	number = Long.parseLong(input);
+		    	userInput = Long.parseLong(input);
 		    	
 		    }
 		    catch(Exception e){
@@ -188,21 +231,21 @@ public class Lab7 extends JFrame
 	{
 		
 		super("Prime Number Finder ");
-		setLocationRelativeTo(null);
-		setSize(800,400);
+		
+		setSize(900,400);
 		//default behavior is to simply hide the JFrame when the user closes the window
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+		//GUI layout
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(topPanel, BorderLayout.NORTH);
 		getContentPane().add(CenterPanel, BorderLayout.CENTER);
-		topPanel.setText("Click the Find Prime number button and input a number.\n");
-		
+		getContentPane().add(rightPanel, BorderLayout.EAST);
+		topPanel.setText("Please Click [Find Prime Numbers] and input a value to search for all Prime numbers.\n");
+		//puts gui to center of screen
+		setLocationRelativeTo(null);
 		//buttons
 		getContentPane().add(getBottomPanel(), BorderLayout.SOUTH);
-		
 
-	
 	setVisible(true);
 		
 	}
@@ -214,8 +257,3 @@ public class Lab7 extends JFrame
    
 
 }
-
-
-
-
-
